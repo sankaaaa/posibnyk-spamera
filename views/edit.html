@@ -26,7 +26,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
-        const emailId = window.location.pathname.split('/')[1]; // отримуємо ID з URL
+        const emailId = window.location.pathname.split('/')[1];
 
         if (!emailId) {
             alert("Помилка: ID не знайдено!");
@@ -40,7 +40,6 @@
 
                 const email = await response.json();
 
-                // Заповнюємо форму отриманими даними
                 document.getElementById("email-id").value = email._id;
                 document.getElementById("firstName").value = email.firstName;
                 document.getElementById("lastName").value = email.lastName;
@@ -71,8 +70,8 @@
 
                 if (!response.ok) throw new Error("Не вдалося оновити email");
 
-                alert("Email оновлено!");
-                window.location.href = "/";  // після оновлення перенаправлення на головну сторінку
+                alert("Дані оновлено!");
+                window.location.href = "/";
             } catch (error) {
                 console.error("Помилка оновлення:", error);
             }

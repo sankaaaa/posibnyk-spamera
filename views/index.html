@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Email List</title>
-    <!-- Додаємо посилання на Bootstrap для модальних вікон -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
@@ -56,6 +55,30 @@
                     <tbody id="email-list">
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailModal" tabindex="-1" aria-labelledby="emailModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailModalLabel">Надіслати Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="send-email-form">
+                    <div class="mb-3">
+                        <label for="email-to" class="form-label">Email одержувача</label>
+                        <input type="email" id="email-to" class="form-control" readonly required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email-message" class="form-label">Повідомлення</label>
+                        <textarea id="email-message" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Надіслати</button>
+                </form>
             </div>
         </div>
     </div>
@@ -145,13 +168,51 @@
         }
     }
 
+    function openEmailModal(email) {
+        document.getElementById("email-to").value = email;
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
         fetchEmails();
 
         const form = document.getElementById("new-email-form");
         form.addEventListener("submit", addEmail);
     });
+
+    document.getElementById("send-email-form").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const emailTo = document.getElementById("email-to").value;
+        const emailMessage = document.getElementById("email-message").value;
+
+        const emailSubject = "Ваше повідомлення";
+
+        try {
+            const response = await fetch('/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to: emailTo,
+                    subject: emailSubject,
+                    message: emailMessage
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert('Email успішно надіслано!');
+            } else {
+                alert(result.error || 'Помилка при відправці email');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Сталася помилка при відправці email');
+        }
+    });
 </script>
+
 
 </body>
 </html>
