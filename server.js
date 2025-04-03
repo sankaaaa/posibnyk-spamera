@@ -87,7 +87,7 @@ app.post('/emails', async (req, res) => {
     try {
         const newEmail = new Email({firstName, lastName, email});
         await newEmail.save();
-        res.status(201).json(newEmail); // Відправляємо створений email назад
+        res.status(201).json(newEmail);
     } catch (err) {
         console.error(err);
         res.status(500).json({error: 'Помилка при додаванні email'});
