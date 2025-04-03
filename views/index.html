@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email List</title>
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+            <h2 class="fw-bold">Список Email-адрес</h2>
+        </div>
+        <div class="card-body">
+            <!-- Кнопка для додавання нового email -->
+            <button class="btn btn-success mb-3" onclick="toggleAddEmailForm()">Додати Email</button>
+
+            <!-- Форма для додавання нового email (спочатку прихована) -->
+            <div id="add-email-form" style="display: none;">
+                <h3>Додати новий Email</h3>
+                <form id="new-email-form">
+                    <div class="mb-3">
+                        <label for="new-firstName" class="form-label">Ім'я</label>
+                        <input type="text" id="new-firstName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-lastName" class="form-label">Прізвище</label>
+                        <input type="text" id="new-lastName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new-email" class="form-label">Email</label>
+                        <input type="email" id="new-email" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover text-center">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Прізвище</th>
+                        <th>Ім'я</th>
+                        <th>Email</th>
+                        <th>Дії</th>
+                    </tr>
+                    </thead>
+                    <tbody id="email-list">
+                    <!-- Сюди будуть додаватися email-и -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Функція для завантаження списку email-ів
+    async function fetchEmails() {
+        try {
+            const response = await fetch('/emails');
+            if (!response.ok) throw new Error("Помилка завантаження email-ів");
+
+            const emails = await response.json();
+            const tbody = document.getElementById("email-list");
+            tbody.innerHTML = ""; // Очищуємо таблицю перед додаванням
+
+            emails.forEach((email, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${email.lastName}</td>
+                <td>${email.firstName}</td>
+                <td>${email.email}</td>
+                <td>
+                    <a href="/${email._id}" class="btn btn-warning btn-sm">Редагувати</a>
+                    <button onclick="deleteEmail('${email._id}')" class="btn btn-danger btn-sm">Видалити</button>
+                </td>
+                `;
+                tbody.appendChild(row);
+            });
+        } catch (error) {
+            console.error("Помилка:", error);
+        }
+    }
+
+    // Функція для показу/приховування форми додавання нового email
+    function toggleAddEmailForm() {
+        const form = document.getElementById("add-email-form");
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    // Функція для додавання нового email
+    async function addEmail(event) {
+        event.preventDefault();
+
+        const firstName = document.getElementById("new-firstName").value;
+        const lastName = document.getElementById("new-lastName").value;
+        const email = document.getElementById("new-email").value;
+
+        try {
+            const response = await fetch('/emails', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ firstName, lastName, email })
+            });
+
+            if (!response.ok) throw new Error("Помилка при додаванні email");
+
+            // Очищаємо форму після успішного додавання
+            document.getElementById("new-email-form").reset();
+            toggleAddEmailForm();
+            fetchEmails(); // Оновлюємо список email-ів
+        } catch (error) {
+            console.error("Помилка:", error);
+        }
+    }
+
+    // Функція для видалення email
+    async function deleteEmail(id) {
+        const confirmation = confirm("Ви дійсно хочете видалити цей email?");
+        if (!confirmation) return;
+
+        try {
+            const response = await fetch(`/emails/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) throw new Error("Помилка при видаленні email");
+
+            fetchEmails(); // Оновлюємо список email-ів після видалення
+        } catch (error) {
+            console.error("Помилка:", error);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        fetchEmails();
+
+        // Додаємо обробник для форми
+        const form = document.getElementById("new-email-form");
+        form.addEventListener("submit", addEmail);
+    });
+</script>
+
+</body>
+</html>

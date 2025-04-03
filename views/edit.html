@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редагувати Email</title>
+</head>
+<body>
+
+<h2>Редагувати Email</h2>
+
+<form id="edit-form">
+    <input type="hidden" id="email-id">
+
+    <label>Ім'я:</label>
+    <input type="text" id="firstName" required>
+
+    <label>Прізвище:</label>
+    <input type="text" id="lastName" required>
+
+    <label>Email:</label>
+    <input type="email" id="email" required>
+
+    <button type="submit">Зберегти зміни</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const emailId = window.location.pathname.split('/')[1]; // отримуємо ID з URL
+
+        if (!emailId) {
+            alert("Помилка: ID не знайдено!");
+            return;
+        }
+
+        async function loadEmailData() {
+            try {
+                const response = await fetch(`/api/email/${emailId}`);
+                if (!response.ok) throw new Error("Email не знайдено");
+
+                const email = await response.json();
+
+                // Заповнюємо форму отриманими даними
+                document.getElementById("email-id").value = email._id;
+                document.getElementById("firstName").value = email.firstName;
+                document.getElementById("lastName").value = email.lastName;
+                document.getElementById("email").value = email.email;
+            } catch (error) {
+                console.error("Помилка при завантаженні email:", error);
+            }
+        }
+
+        await loadEmailData();
+
+
+        document.getElementById("edit-form").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const updatedEmail = {
+                firstName: document.getElementById("firstName").value,
+                lastName: document.getElementById("lastName").value,
+                email: document.getElementById("email").value
+            };
+
+            try {
+                const response = await fetch(`/${emailId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updatedEmail)
+                });
+
+                if (!response.ok) throw new Error("Не вдалося оновити email");
+
+                alert("Email оновлено!");
+                window.location.href = "/";  // після оновлення перенаправлення на головну сторінку
+            } catch (error) {
+                console.error("Помилка оновлення:", error);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
